@@ -2,6 +2,43 @@
 
 국내 상장 ETF의 일별 종가와 거래량을 같은 거래일에 맞춰 비교합니다. 일평균 거래량, 기간 가격 수익률, 연환산 변동성을 계산합니다.
 
+## ETF 시세 대시보드
+
+[dashboard.html](dashboard.html)을 브라우저에서 열면 ETF를 운용사·시장·상품 유형별로 조회할 수 있습니다. 종목명이나 코드로 검색하고, 현재 필터에 해당하는 ETF의 거래량과 등락률을 비교할 수 있습니다. 처음에는 **합성 데이터**가 표시됩니다.
+
+데이터를 교체하려면 사용 허가를 받은 JSON 파일을 가져오거나, 브라우저의 교차 출처 요청을 허용하는 HTTPS 데이터 주소(CORS)를 연결하세요. 연결 중에는 60초마다 새 데이터를 조회합니다. 화면의 시세 기준 시각은 데이터가 제공한 `asOf`이며, 새로고침 간격과 실제 시세의 갱신 주기는 다를 수 있습니다. 네이버페이 증권은 시세를 외부 웹페이지나 프로그램에서 가공해 사용하는 것을 제한합니다. [네이버페이 증권 API 이용 안내](https://help.pay.naver.com/faq/content.help?faqId=17106)
+
+파일을 직접 열었을 때 브라우저가 데이터 연결을 막으면 프로젝트 폴더에서 다음 명령을 실행하고 [로컬 대시보드](http://127.0.0.1:8765/dashboard.html)를 여세요.
+
+```powershell
+./.uv/Scripts/python.exe -m http.server 8765 --bind 127.0.0.1
+```
+
+파일과 데이터 응답은 아래와 같은 JSON 형식을 사용합니다. 예시 값은 합성 데이터입니다.
+
+```json
+{
+  "asOf": "2026-11-17T15:30:00+09:00",
+  "source": "예시 데이터",
+  "rows": [
+    {
+      "code": "SMP001",
+      "name": "예시 코리아 100 ETF",
+      "manager": "예시자산운용",
+      "market": "국내 주식",
+      "product": "대표지수",
+      "price": 12500,
+      "change": 1.25,
+      "volume": 100000,
+      "tradingValue": 1250000000,
+      "nav": null
+    }
+  ]
+}
+```
+
+`asOf`에는 시간대를 포함한 ISO 8601 시각을, `code`에는 앞자리 0을 유지한 영문·숫자 6자리 문자열을 넣습니다. `price`·`tradingValue`·`nav`는 원, `volume`은 주 단위입니다. `change`의 `1.25`는 `+1.25%`를 뜻합니다. 거래대금이나 NAV를 제공하지 않는 경우 해당 값은 `null`로 둘 수 있습니다.
+
 ## 데이터 출처
 
 [네이버페이 증권의 이용 안내](https://help.pay.naver.com/faq/content.help?faqId=17106)는 시세의 가공과 재배포를 제한합니다. [금융위원회 증권상품시세정보](https://www.data.go.kr/data/15094806/openapi.do) 역시 제3자 제공을 제한하며, [한국거래소 ETF 일별매매정보 API](https://openapi.krx.co.kr/contents/OPP/INFO/OPPINFO004.cmd)는 [승인된 인증키](https://openapi.krx.co.kr/contents/OPP/INFO/OPPINFO003.jsp)가 필요합니다.

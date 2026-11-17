@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>국내 ETF 대시보드</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="dashboard-data.js" defer></script>
+  <script src="dashboard.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <aside class="sidebar" aria-label="대시보드 메뉴">
+    <a class="brand" href="#main">
+      <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>ETF 대시보드<small>국내 상장 상품</small></span>
+    </a>
+    <nav class="side-nav">
+      <a href="#main" aria-current="page"><span aria-hidden="true">▦</span>시장 개요</a>
+      <a href="#analysis" data-dimension="manager"><span aria-hidden="true">▥</span>운용사별 분석</a>
+      <a href="#analysis" data-dimension="market"><span aria-hidden="true">◎</span>시장별 분석</a>
+      <a href="#analysis" data-dimension="product"><span aria-hidden="true">◇</span>상품별 분석</a>
+      <a href="#screener"><span aria-hidden="true">≡</span>종목 조회</a>
+    </nav>
+    <div class="side-footer">
+      <span>외부 시세 조회</span>
+      <a href="https://stock.naver.com/market/stock/kr/etf" target="_blank" rel="noopener noreferrer">네이버페이 증권 <span aria-hidden="true">↗</span></a>
+    </div>
+  </aside>
+  <main id="main" tabindex="-1">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">국내 ETF</p>
+        <h1>시장 개요</h1>
+        <p class="lede">시세와 거래 현황을 운용사, 시장, 상품 유형으로 나눠 살펴보세요.</p>
+      </div>
+      <button class="button primary" id="open-source" type="button"><span aria-hidden="true">＋</span> 데이터 연결</button>
+    </header>
+    <div class="source-strip" aria-live="polite">
+      <div class="source-info">
+        <span class="source-badge" id="source-mode"><i aria-hidden="true"></i>예제 데이터</span>
+        <span id="source-name"></span>
+        <span class="source-dot" aria-hidden="true">·</span>
+        <time id="data-time"></time>
+      </div>
+      <span class="source-notice" id="source-note"></span>
+    </div>
+
+    <section class="kpi-grid" aria-label="ETF 요약 지표" id="summary">
+      <article class="card kpi"><h2>조회 ETF</h2><strong id="kpi-count">—</strong><p id="kpi-count-note"></p></article>
+      <article class="card kpi"><h2>합산 거래량</h2><strong id="kpi-volume">—</strong><p>조회 종목의 누적 거래량</p></article>
+      <article class="card kpi"><h2>평균 등락률</h2><strong id="kpi-change">—</strong><p>조회 종목의 등락률 단순평균</p></article>
+      <article class="card kpi"><h2>상승 종목</h2><strong id="kpi-rising">—</strong><p id="kpi-rising-note"></p></article>
+    </section>
+
+    <section class="analysis-grid" id="analysis" aria-label="ETF 분류 비교">
+      <article class="card breakdown">
+        <div class="panel-heading">
+          <div><h2 id="breakdown-title">운용사별 비교</h2><p id="breakdown-subtitle">분류별 합산 거래량이 많은 순서입니다.</p></div>
+          <label class="visually-hidden" for="chart-metric">비교 지표</label>
+          <select class="compact-select" id="chart-metric">
+            <option value="volume">거래량</option>
+            <option value="count">종목 수</option>
+            <option value="tradingValue">거래대금</option>
+          </select>
+        </div>
+        <div class="segmented" role="group" aria-label="분석 분류">
+          <button type="button" data-dimension="manager" aria-pressed="true">운용사</button>
+          <button type="button" data-dimension="market" aria-pressed="false">시장</button>
+          <button type="button" data-dimension="product" aria-pressed="false">상품</button>
+        </div>
+        <div class="chart" id="breakdown-chart" aria-labelledby="breakdown-title"></div>
+      </article>
+      <article class="card movers">
+        <div class="panel-heading">
+          <div><h2>거래량 상위</h2><p>현재 조회 조건의 상위 5개 ETF</p></div>
+        </div>
+        <ol class="leaders" id="leaders" aria-label="거래량 상위 종목"></ol>
+      </article>
+    </section>
+
+    <section class="card screener" id="screener" aria-labelledby="screener-title">
+      <div class="panel-heading">
+        <div><h2 id="screener-title">종목 조회</h2><p id="match-count" aria-live="polite"></p></div>
+        <button class="button secondary" id="reset-filters" type="button">필터 초기화</button>
+      </div>
+      <div class="filters">
+        <label class="field search-field"><span>종목 검색</span><input id="search" type="search" placeholder="종목명 또는 종목코드"></label>
+        <label class="field"><span>운용사</span><select id="filter-manager"></select></label>
+        <label class="field"><span>시장</span><select id="filter-market"></select></label>
+        <label class="field"><span>상품</span><select id="filter-product"></select></label>
+        <label class="field sort-field"><span>정렬</span><select id="sort">
+          <option value="volume">거래량순</option>
+          <option value="tradingValue">거래대금순</option>
+          <option value="changeDesc">등락률 높은 순</option>
+          <option value="changeAsc">등락률 낮은 순</option>
+          <option value="name">종목명순</option>
+        </select></label>
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="ETF 시세 목록">
+        <table>
+          <caption class="visually-hidden">ETF 종목별 시세와 거래 정보</caption>
+          <thead><tr>
+            <th scope="col">종목명 / 코드</th><th scope="col">운용사</th><th scope="col">시장</th><th scope="col">상품</th>
+            <th scope="col" class="number">가격(원)</th><th scope="col" class="number">등락률</th>
+            <th scope="col" class="number">거래량(주)</th><th scope="col" class="number">거래대금(원)</th>
+          </tr></thead>
+          <tbody id="etf-rows"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="page-label"></span>
+        <div class="pagination" aria-label="종목 목록 페이지">
+          <button class="button secondary" type="button" id="prev-page">이전</button>
+          <button class="button secondary" type="button" id="next-page">다음</button>
+        </div>
+      </div>
+    </section>
+    <footer class="page-footer">시장은 데이터 제공처가 지정한 투자 대상 시장입니다. 시세 기준 시각은 한국 시간으로 표시합니다.</footer>
+  </main>
+
+  <dialog id="source-dialog" aria-labelledby="source-title">
+    <div class="dialog-header">
+      <h2 id="source-title">데이터 연결</h2>
+      <form method="dialog"><button class="close-button" type="submit" aria-label="데이터 연결 닫기">×</button></form>
+    </div>
+    <p class="dialog-copy">이용 허가를 받은 JSON 파일이나 API를 연결하세요.</p>
+    <form id="feed-form" class="feed-form">
+      <label class="field"><span>시세 API 주소</span><input type="url" id="feed-url" placeholder="https://example.com/etf.json" autocomplete="off" spellcheck="false" required></label>
+      <p class="field-help">연결한 주소는 이 탭에서 60초마다 조회합니다.</p>
+      <div class="form-actions"><button type="submit" class="button primary" id="connect-feed">연결</button><button type="button" class="button secondary" id="refresh-feed" disabled>지금 갱신</button><button type="button" class="button secondary" id="stop-feed" disabled>연결 해제</button></div>
+    </form>
+    <div class="file-actions">
+      <label class="field"><span>JSON 파일 열기</span><input id="import-file" type="file" accept=".json,application/json"></label>
+      <div class="form-actions">
+        <button type="button" class="button secondary" id="download-example">JSON 양식 받기</button>
+        <button type="button" class="button secondary" id="restore-demo">예제 데이터로 돌아가기</button>
+      </div>
+    </div>
+    <p class="feedback" id="source-feedback" role="status"></p>
+  </dialog>
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <div class="dialog-header">
+      <div><p class="eyebrow" id="detail-code"></p><h2 id="detail-title"></h2></div>
+      <form method="dialog"><button class="close-button" type="submit" aria-label="종목 상세 닫기">×</button></form>
+    </div>
+    <dl class="detail-grid" id="detail-values"></dl>
+    <p class="field-help" id="detail-asof"></p>
+  </dialog>
+  <noscript><p class="no-script">대시보드의 조회 기능을 사용하려면 브라우저에서 JavaScript를 허용해 주세요.</p></noscript>
+</body>
+</html>
